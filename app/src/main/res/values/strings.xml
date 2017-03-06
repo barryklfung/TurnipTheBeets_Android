@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Turnip The Beets</string>
     <string name="action_settings">Settings</string>
+    <string name="main_menu_1">Get Recipes</string>
+    <string name="main_menu_2">Check Inventory</string>
+    <string name="mm_image_descript">Turnip The Beets Logo</string>
 </resources>
