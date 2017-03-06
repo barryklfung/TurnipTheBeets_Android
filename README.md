@@ -5,11 +5,13 @@
  
  The application is developed in partial requirements for ESC472 - Electrical and Computer Capstone Design at the University of Toronto.
  
- =======
-### Main Developers:
+ ---
+### Main Developer(s):
  K.L. Barry Fung
  
 ### Contributors:
- Raymond Ly
- Yi Fan (Danny) Zhang
- Wen Tao (Bill) Zhao
+Raymond Ly
+
+Yi Fan (Danny) Zhang
+
+Wen Tao (Bill) Zhao
