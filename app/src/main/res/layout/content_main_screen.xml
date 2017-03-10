@@ -14,31 +14,33 @@
     tools:showIn="@layout/activity_main_screen">
 
     <Button
-        android:text="@string/main_menu_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/button"
-        android:layout_above="@+id/button2"
-        android:layout_centerHorizontal="true" />
-
-    <Button
         android:text="@string/main_menu_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/button2"
+        android:layout_marginBottom="17dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="67dp" />
+        android:onClick="OpenInventoryActivity" />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ttb_lite"
         android:id="@+id/imageView"
-        android:layout_marginBottom="32dp"
-        android:layout_above="@+id/button2"
+        android:contentDescription="@string/mm_image_descript"
+        android:layout_above="@+id/button"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:contentDescription="@string/mm_image_descript"/>
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="@string/main_menu_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button"
+        android:layout_marginBottom="14dp"
+        android:layout_above="@+id/button2"
+        android:layout_centerHorizontal="true"
+        android:onClick="OpenRecipeActivity" />
 
 </RelativeLayout>
