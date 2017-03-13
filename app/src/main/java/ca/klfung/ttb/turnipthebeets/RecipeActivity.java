@@ -24,6 +24,7 @@ public class RecipeActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
