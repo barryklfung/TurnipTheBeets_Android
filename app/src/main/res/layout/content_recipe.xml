@@ -13,4 +13,12 @@
     tools:context="ca.klfung.ttb.turnipthebeets.RecipeActivity"
     tools:showIn="@layout/activity_recipe">
 
+    <TextView
+        android:id="@+id/txt_recp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="TextView" />
 </RelativeLayout>

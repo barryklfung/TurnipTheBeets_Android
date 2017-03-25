@@ -7,7 +7,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -20,10 +22,13 @@ import android.view.LayoutInflater;
 import android.content.DialogInterface;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
+import android.widget.SearchView;
 
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -38,6 +43,15 @@ import org.json.JSONObject;
 import ca.klfung.ttb.turnipthebeets.R;
 
 public class InventoryCheck extends AppCompatActivity {
+
+    HashMap<String, EditText> cur_values = new HashMap<String, EditText>();
+
+    final List<String> list_item = new ArrayList<String>();
+    final List<String> list_mass = new ArrayList<String>();
+    boolean showDialog = false;
+
+    HashMap<String, TableRow> ingred_table = new HashMap<String, TableRow>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,21 +59,70 @@ public class InventoryCheck extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Dialog temp = onCreateDialog(view);
-                temp.show();
-            }
-        });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        String result = "";
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        List<String> list_item = new ArrayList<String>();
-        List<String> list_mass = new ArrayList<String>();
+        get_inventory(list_item, list_mass);
+
+        FloatingActionButton fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
+        fab_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Dialog temp = onCreateAddDialog(view, list_item, list_mass);
+                temp.show();
+            }
+        });
+
+        FloatingActionButton fab_push = (FloatingActionButton) findViewById(R.id.fab_push);
+        fab_push.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDialog = true;
+                Dialog temp = onCreatePushDialog(view);
+                if ( showDialog ){
+                    temp.show();
+                }
+                else{
+                    Snackbar.make(view, "No changes from the database!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
+            }
+        });
+
+        SearchView sv = (SearchView) findViewById(R.id.sv_inventory);
+        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                for (HashMap.Entry<String, TableRow> entry : ingred_table.entrySet()) {
+                    if (entry.getKey().toLowerCase().contains(newText.toLowerCase())){
+                        entry.getValue().setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        entry.getValue().setVisibility(View.GONE);
+                    }
+                }
+                return false;
+            }
+        });
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        TableLayout t1=(TableLayout)findViewById(R.id.tbl_inventory);
+        int size = list_item.size();
+
+        for (int i = 0; i < size; i++) {
+            addNewItem(list_item.get(i), list_mass.get(i), t1);
+        }
+    }
+
+    public void get_inventory(List<String> list_item, List<String> list_mass) {
+
         try {
 
             URL url = new URL("https://turnipthebeets.herokuapp.com/inventory");
@@ -70,6 +133,7 @@ public class InventoryCheck extends AppCompatActivity {
                 urlConnection.connect();
                 InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
                 Scanner s = new Scanner(inputStream).useDelimiter("\\A");
+                String result = "";
                 result = s.hasNext() ? s.next() : "";
 
                 JSONObject jObject = new JSONObject(result);
@@ -97,32 +161,159 @@ public class InventoryCheck extends AppCompatActivity {
         }catch(Exception e)
         {
         }
+    }
 
-        TableLayout t1=(TableLayout)findViewById(R.id.tbl_inventory);
-        int size = list_item.size();
+    public void push_inventory(List<String> change_item, List<Double> change_mass) {
 
-        for (int i = 0; i < size; i++) {
-            addNewItem(list_item.get(i), list_mass.get(i), t1);
+        for (int i = 0; i < change_item.size(); i++) {
+            try {
+
+                URL url = new URL("https://turnipthebeets.herokuapp.com/inventory/");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+
+                    urlConnection.setRequestMethod("POST");
+                    urlConnection.addRequestProperty("Content-Type", "application/json");
+                    urlConnection.addRequestProperty("Accept", "application/json");
+                    urlConnection.setDoOutput(true);
+
+                    urlConnection.connect();
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("item", change_item.get(i));
+                    jsonObj.put("mass", change_mass.get(i));
+
+                    OutputStreamWriter wr = new OutputStreamWriter(urlConnection.getOutputStream());
+                    wr.write(jsonObj.toString());
+                    wr.flush();
+
+                    InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                    Scanner s = new Scanner(inputStream).useDelimiter("\\A");
+                    String result = s.hasNext() ? s.next() : "";
+
+                } catch (Exception e) {
+                } finally {
+                    urlConnection.disconnect();
+                }
+            }catch(Exception e)
+            {
+            }
         }
     }
 
+
     public void addNewItem(String ingredient, String mass, TableLayout t1) {
-        TableRow tr1 = new TableRow(this);
-        TableRow.LayoutParams params = new LayoutParams();
-        params.span = 2;
-        tr1.setLayoutParams(params);
-        TextView ing_name = new TextView(this);
-        ing_name.setText(ingredient);
-        EditText amount = new EditText(this);
-        amount.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
-        amount.setText(mass);
-        amount.setGravity(0x05);
-        tr1.addView(ing_name);
-        tr1.addView(amount);
-        t1.addView(tr1, new TableLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        EditText txt = cur_values.get(ingredient.toLowerCase());
+        mass = String.format( "%.2f", Float.parseFloat(mass));
+        if (txt == null) {
+            TableRow tr1 = new TableRow(this);
+            TableRow.LayoutParams params = new LayoutParams();
+            params.span = 2;
+            tr1.setLayoutParams(params);
+            TextView ing_name = new TextView(this);
+            ing_name.setText(ingredient.substring(0, 1).toUpperCase() + ingredient.substring(1));
+            EditText amount = new EditText(this);
+            cur_values.put(ingredient.toLowerCase(), amount);
+            amount.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            amount.setText(mass);
+            amount.setGravity(0x05);
+            amount.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        String m = v.getText().toString();
+                        m = String.format( "%.2f", Float.parseFloat(m));
+                        v.setText(m);
+
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            ingred_table.put(ingredient.toLowerCase(), tr1);
+            tr1.addView(ing_name);
+            tr1.addView(amount);
+            t1.addView(tr1, new TableLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        }
+        else{
+            txt.setText(mass);
+        }
     }
 
-    public Dialog onCreateDialog(View view) {
+    public Dialog onCreatePushDialog(View view){
+
+        final List<String> change_item = new ArrayList<String>();
+        final List<Double> change_mass = new ArrayList<Double>();
+        final List<String> cur_mass = new ArrayList<String>();
+        Double epsilon = 0.001;
+
+        for (int i=0; i < list_item.size(); i++)
+        {
+            EditText res = cur_values.get(list_item.get(i));
+            if (res == null && !(Integer.parseInt(list_mass.get(i)) == 0) ){
+                change_item.add(list_item.get(i));
+                change_mass.add(-Double.parseDouble(list_mass.get(i)));
+                cur_mass.add("0");
+            }
+            else if (!(res == null))
+            {
+                Double cur = Double.parseDouble(res.getText().toString());
+                Double prev = Double.parseDouble(list_mass.get(i));
+                if (Math.abs(cur - prev) > epsilon){
+                    change_item.add(list_item.get(i));
+                    change_mass.add(cur-prev);
+                    cur_mass.add(res.getText().toString());
+                }
+            }
+        }
+
+        if ( change_item.size() == 0 ){
+            showDialog = false;
+        }
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        View inflatedView = inflater.inflate(R.layout.push_inventory_dialog, null);
+        final TableLayout tbl1 = (TableLayout) inflatedView.findViewById(R.id.tbl_change);
+
+        for (int i = 0; i < change_item.size(); i++) {
+            TableRow tr1 = new TableRow(this);
+            TableRow.LayoutParams params = new LayoutParams();
+            params.span = 2;
+            tr1.setLayoutParams(params);
+            TextView txt_name = new TextView(this);
+            String ingredient = change_item.get(i);
+            txt_name.setText(ingredient.substring(0, 1).toUpperCase() + ingredient.substring(1));
+            TextView txt_amount = new TextView(this);
+            txt_amount.setText(cur_mass.get(i));
+            tr1.addView(txt_name);
+            tr1.addView(txt_amount);
+            tbl1.addView(tr1, new TableLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        }
+
+        final View vF = view;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(inflatedView)
+                // Add action buttons
+                .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        push_inventory(change_item, change_mass);
+                        Snackbar.make(vF, "Database Updated!", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Snackbar.make(vF, "Changes Canceled!", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+
+                    }
+                });
+        return builder.create();
+    }
+
+
+    public Dialog onCreateAddDialog(View view, List<String> list_item, List<String> list_mass) {
         List<String> list = new ArrayList<String>();
         String[] ingred_name = { "Apple", "Egg", "Steak", "Orange", "Broccoli", "Cucumber", "Tomato", "Potato", "Banana", "Chicken", "Pork", "Lamb", "Carrot", "Celery", "Onion", "Garlic", "Mushroom", "Spinach", "Cabbage"};
         int size = ingred_name.length;

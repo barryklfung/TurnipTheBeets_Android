@@ -1,14 +1,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
+    android:orientation="vertical">
 
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
         android:text="Add Item"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Display2"
@@ -19,41 +21,52 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
         android:orientation="horizontal"
         android:weightSum="1">
 
         <TextView
             android:id="@+id/textView3"
-            android:layout_width="wrap_content"
+            android:layout_width="73dp"
             android:layout_height="wrap_content"
-            android:text="Item" />
+            android:text="Item"
+            android:textSize="18sp" />
 
         <Spinner
             android:id="@+id/spn_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:contextClickable="false" />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/textView4"
-            android:layout_width="wrap_content"
+            android:layout_width="73dp"
             android:layout_height="wrap_content"
-            android:text="Value" />
+            android:text="Value"
+            android:textSize="18sp" />
 
         <EditText
             android:id="@+id/txt_amount"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="10849.82"
             android:ems="10"
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal"
+            android:textAlignment="textEnd"
+            android:layout_gravity="end"/>
 
     </LinearLayout>
 
